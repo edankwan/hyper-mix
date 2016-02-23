@@ -64,10 +64,8 @@ function init(renderer, camera, scene) {
 
     var geomtry =  new THREE.PlaneBufferGeometry( 2, 2 );
     var uniforms = THREE.UniformsUtils.merge([THREE.UniformsLib.ambient, THREE.UniformsLib.lights]);
-    uniforms.uTime = {type: 't', value: 0};
     uniforms.uDepth = {type: 't', value: _depthRenderTarget};
     uniforms.uAdditive = {type: 't', value: _additiveRenderTarget};
-    // uniforms.uSphereMap = {type: 't', value: new THREE.Texture(settings.sphereMap)};
     uniforms.uResolution = {type: 'v2', value: _resolution};
     uniforms.uCameraInverse = {type: 'm4', value: _camera.matrixWorld};
     uniforms.uCameraRotationInverse = {type: 'm4', value: new THREE.Matrix4()};
@@ -85,11 +83,6 @@ function init(renderer, camera, scene) {
         vertexShader: shaderParse(glslify('../glsl/particles.vert')),
         fragmentShader: shaderParse(glslify('../glsl/particles.frag'))
     });
-
-
-    // _particlesMaterial.uniforms.uSphereMap.value.anisotropy = 16;
-    // _particlesMaterial.uniforms.uSphereMap.value.needsUpdate = true;
-    // _particlesMaterial.uniforms.uSphereMap.value.flipY = false;
     mesh = exports.mesh = new THREE.Mesh(geomtry, _particlesMaterial);
     _quadScene.add(mesh);
 
