@@ -100,6 +100,8 @@ function update(dt) {
     var clearColor = _renderer.getClearColor().getHex();
     var clearAlpha = _renderer.getClearAlpha();
 
+    _renderer.autoClearColor = false;
+
     _renderer.setClearColor(0, 0);
     _renderer.clearTarget(renderTarget);
     _renderer.setViewport(0, 0, TEXTURE_WIDTH, TEXTURE_HEIGHT);

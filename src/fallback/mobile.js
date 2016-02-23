@@ -1,6 +1,8 @@
+var settings = require('../core/settings');
 var isMobile = /(iPad|iPhone|Android)/i.test(navigator.userAgent);
 
 exports.pass = pass;
+settings.isMobile = isMobile;
 
 var _callback;
 

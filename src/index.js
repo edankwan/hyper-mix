@@ -112,11 +112,6 @@ function init() {
     // _control.noPan = true;
     _control.update();
 
-    // _debugPlane = new THREE.Mesh(new THREE.PlaneBufferGeometry(320,320), new THREE.MeshBasicMaterial({
-    //     map : volume.renderTarget
-    // }));
-    // _scene.add(_debugPlane);
-
     _gui = new dat.GUI();
     var simulatorGui = _gui.addFolder('Simulator');
     simulatorGui.add(settings, 'speed', 0, 0.7).listen();
@@ -131,7 +126,6 @@ function init() {
             window.location.reload();
         }
     });
-    simulatorGui.open();
 
     var renderingGui = _gui.addFolder('Rendering');
     renderingGui.add(settings, 'blur', 0, 5);
@@ -139,7 +133,11 @@ function init() {
     renderingGui.addColor(settings, 'bgColor');
     renderingGui.addColor(settings, 'color1');
     renderingGui.addColor(settings, 'color2');
-    renderingGui.open();
+
+    if(!settings.isMobile) {
+        simulatorGui.open();
+        renderingGui.open();
+    }
 
     _logo = document.querySelector('.logo');
     _instruction = document.querySelector('.instruction');
@@ -241,8 +239,10 @@ function _render(dt) {
     }
 
     ratio = math.unLerp(0.5, 0.6, _initAnimation);
-    _instruction.style.display = ratio ? 'block' : 'none';
-    _instruction.style.transform = 'translate3d(0,' + ((1 - ratio * ratio) * 50) + 'px,0)';
+    if(!settings.isMobile) {
+        _instruction.style.display = ratio ? 'block' : 'none';
+        _instruction.style.transform = 'translate3d(0,' + ((1 - ratio * ratio) * 50) + 'px,0)';
+    }
 
     for(var i = 0, len = _footerItems.length; i < len; i++) {
         ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
@@ -254,18 +254,5 @@ function _render(dt) {
     postprocessing.renderVignette();
     postprocessing.renderFxaa(true);
 }
-
-// mobile.pass(function() {
-//     quickLoader.add('images/matcap.jpg', {
-//         onLoad: function(img) {
-//             settings.sphereMap = img;
-//         }
-//     });
-//     quickLoader.start(function(percent) {
-//         if(percent === 1) {
-//             init();
-//         }
-//     });
-// });
 
 mobile.pass(init);

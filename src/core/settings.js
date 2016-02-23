@@ -32,8 +32,8 @@ exports.emitterSpeed = 20.0;
 exports.volumeWidth = 256;
 exports.volumeHeight = 128;
 exports.volumeDepth = 128;
-exports.volumeSliceColumn = 16;
-exports.volumeSliceRow = 8;
+exports.volumeSliceColumn = 8;
+exports.volumeSliceRow = 16;
 exports.volumeScale = 7;
 
 exports.speed = 0.25;

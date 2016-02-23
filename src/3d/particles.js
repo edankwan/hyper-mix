@@ -140,9 +140,9 @@ function _initDepthRenderTarget() {
         minFilter: THREE.NearestFilter,
         magFilter: THREE.NearestFilter,
         type: THREE.FloatType,
-        format: THREE.RGBFormat,
+        format: THREE.RGBAFormat,
         stencilBuffer: false,
-        transparent: false
+        transparent: true
     });
     _depthRenderTarget.material = material;
 }
@@ -221,7 +221,6 @@ function resize(width, height) {
     _width = width;
     _height = height;
     _resolution.set(width, height);
-
     _depthRenderTarget.setSize(width, height);
     _additiveRenderTarget.setSize(width, height);
     _blurRenderTarget.setSize(width, height);
