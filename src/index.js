@@ -130,6 +130,7 @@ function init() {
     var renderingGui = _gui.addFolder('Rendering');
     renderingGui.add(settings, 'blur', 0, 5);
     renderingGui.add(settings, 'particleSize', 1, 64).name('particle size');
+    renderingGui.add(settings, 'dof', 0, 3, 0.001).name('dof');
     renderingGui.addColor(settings, 'bgColor');
     renderingGui.addColor(settings, 'color1');
     renderingGui.addColor(settings, 'color2');
@@ -251,6 +252,7 @@ function _render(dt) {
 
     var renderTarget = postprocessing.render(_scene, _camera);
     particles.update(renderTarget, dt);
+    postprocessing.renderDof();
     postprocessing.renderVignette();
     postprocessing.renderFxaa(true);
 }

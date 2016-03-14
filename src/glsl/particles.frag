@@ -141,18 +141,19 @@ void main() {
     vec3 lightDirection = normalize(lightPosition);
 
     float light = max(0.0, dot(normalize((uCameraRotationInverse * vec4(merged.xyz, 1.0)).xyz), lightDirection));
-    color += light * (1.0 - smoothstep(500.0, 2500.0, length(lightPosition)));
+    light *= (1.0 - smoothstep(500.0, 2500.0, length(lightPosition)));
+    color += light;
 
-    // fog
-    float fogFactor = whiteCompliment( exp2( - 0.001 * 0.001 * viewPosition.z * viewPosition.z * LOG2 ) );
-    color.xyz = mix(color.xyz, uFogColor, fogFactor);
-    color.xyz = mix(color.xyz, blendOverlay(color.xyz,  mix(uColor1, uColor2, colorRatio)), 0.8);
+    color.xyz = mix(color.xyz, mix(uColor1, uColor2, colorRatio), 0.8);
 
     // shadow
     vec4 spotShadowCoord = spotShadowMatrix[0] * vec4(worldPosition.xyz, 1.0);
     color.xyz *= 0.5 + getShadow( spotShadowMap[0], vec2(1024.0, 2048.0), 0.0, .004, spotShadowCoord, mix(0.0005, 0.0175, light) ) * 0.5;
 
-    color.xyz = max(color.xyz, min(min(vec3(0.27), uFogColor), min(uColor1, uColor2)));
+    // fog
+    float fogFactor = whiteCompliment( exp2( - 0.001 * 0.001 * viewPosition.z * viewPosition.z * LOG2 ) );
+    color.xyz = mix(color.xyz, uFogColor, pow(fogFactor, 6.5));
+
 
     gl_FragColor = vec4(color.xyz, alpha);
 

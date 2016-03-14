@@ -10,10 +10,12 @@ exports.resize = resize;
 exports.render = render;
 exports.renderFxaa = renderFxaa;
 exports.renderVignette = renderVignette;
+exports.renderDof = renderDof;
 exports.renderMaterial = renderMaterial;
 
 var vignette = exports.vignette = undef;
 var fxaa = exports.fxaa = undef;
+var dof = exports.dof = undef;
 
 var vs = exports.vs = undef;
 
@@ -58,6 +60,19 @@ function init(renderer) {
         vertexShader: vs,
         fragmentShader: rawShaderPrefix + shaderParse(glslify('../glsl/vignette.frag'))
     });
+
+    dof = exports.dof = new THREE.RawShaderMaterial({
+        uniforms: {
+            uResolution: { type: 'v2', value: new THREE.Vector2( 1, 1 ) },
+            uDiffuse: { type: 't', value: undef },
+            uDistance: { type: 't', value: undef },
+            uCameraDistance: { type: 'f', value: 0 },
+            uDelta: { type: 'v2', value: new THREE.Vector2() },
+            uAmount: { type: 'f', value: 1 }
+        },
+        vertexShader: vs,
+        fragmentShader: rawShaderPrefix + shaderParse(glslify('../glsl/dof.frag'))
+    });
 }
 
 function _createRenderTarget() {
@@ -78,12 +93,26 @@ function renderVignette(toScreen) {
     renderMaterial(vignette, toScreen);
 }
 
+function renderDof(toScreen) {
+    var uniforms = dof.uniforms;
+    uniforms.uDiffuse.value = _from;
+    uniforms.uCameraDistance.value = settings.cameraPosition.length();
+    uniforms.uAmount.value = settings.dof;
+    uniforms.uDistance.value = settings.distanceMap;
+    uniforms.uDelta.value.set(1, 0);
+    renderMaterial(dof);
+    uniforms.uDiffuse.value = _from;
+    uniforms.uDelta.value.set(0, 1);
+    renderMaterial(dof, toScreen);
+}
+
 function resize(width, height) {
     _to.setSize(width, height);
     _from.setSize(width, height);
 
     fxaa.uniforms.uResolution.value.set(width, height);
     vignette.uniforms.uResolution.value.set(width, height);
+    dof.uniforms.uResolution.value.set(width, height);
 }
 
 function render(scene, camera, toScreen) {

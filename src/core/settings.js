@@ -46,6 +46,7 @@ exports.particleSize = 32;
 exports.bgColor = '#909090';
 exports.color1 = '#ff1e7a';
 exports.color2 = '#00ffc3';
+exports.dof = 1;
 
 exports.capablePrecision = undef;
 

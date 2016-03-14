@@ -138,6 +138,7 @@ function _initDepthRenderTarget() {
         transparent: true
     });
     _depthRenderTarget.material = material;
+    settings.distanceMap = _depthRenderTarget;
 }
 
 function _initAdditiveRenderTarget() {

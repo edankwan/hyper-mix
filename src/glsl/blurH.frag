@@ -7,21 +7,24 @@ void main() {
     vec4 center = texture2D( tDiffuse, vec2( vUv.x, vUv.y ) );
     if(center.z > 0.001) {
 
+        float w = floor(center.w + 0.5);
+        float ww = smoothstep(0.5, 5.0, w);
+        float offset = uOffset * ww;
         vec3 sum = vec3( 0.0 );
         float sumC = 0.0;
-        vec4 color = texture2D( tDiffuse, vec2( vUv.x - 4.0 * uOffset, vUv.y ) );
+        vec4 color = texture2D( tDiffuse, vec2( vUv.x - 4.0 * offset, vUv.y ) );
         sum += color.xyz * 0.051;
         sumC += fract(color.w + 0.5) * 0.051;
 
-        color = texture2D( tDiffuse, vec2( vUv.x - 3.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x - 3.0 * offset, vUv.y ) );
         sum += color.xyz * 0.0918;
         sumC += fract(color.w + 0.5) * 0.0918;
 
-        color = texture2D( tDiffuse, vec2( vUv.x - 2.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x - 2.0 * offset, vUv.y ) );
         sum += color.xyz * 0.12245;
         sumC += fract(color.w + 0.5) * 0.12245;
 
-        color = texture2D( tDiffuse, vec2( vUv.x - 1.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x - 1.0 * offset, vUv.y ) );
         sum += color.xyz * 0.1531;
         sumC += fract(color.w + 0.5) * 0.1531;
 
@@ -29,25 +32,23 @@ void main() {
         sum += color.xyz * 0.1633;
         sumC += fract(color.w + 0.5) * 0.1633;
 
-        color = texture2D( tDiffuse, vec2( vUv.x + 1.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x + 1.0 * offset, vUv.y ) );
         sum += color.xyz * 0.1531;
         sumC += fract(color.w + 0.5) * 0.1531;
 
-        color = texture2D( tDiffuse, vec2( vUv.x + 2.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x + 2.0 * offset, vUv.y ) );
         sum += color.xyz * 0.12245;
         sumC += fract(color.w + 0.5) * 0.12245;
 
-        color = texture2D( tDiffuse, vec2( vUv.x + 3.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x + 3.0 * offset, vUv.y ) );
         sum += color.xyz * 0.0918;
         sumC += fract(color.w + 0.5) * 0.0918;
 
-        color = texture2D( tDiffuse, vec2( vUv.x + 4.0 * uOffset, vUv.y ) );
+        color = texture2D( tDiffuse, vec2( vUv.x + 4.0 * offset, vUv.y ) );
         sum += color.xyz * 0.051;
         sumC += fract(color.w + 0.5) * 0.051;
 
-        float w = floor(center.w + 0.5);
-
-        center = mix(center, vec4(sum.xyz, w + sumC - 0.5 ), smoothstep(0.5, 3.0, center.w));
+        center = mix(center, vec4(sum.xyz, w + sumC - 0.5 ), ww);
         // center.zw = mix(center.zw, vec2(sum.z, w + sumC - 0.5), 0.00035);
     }
 
