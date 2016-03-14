@@ -66,7 +66,7 @@ function init(renderer) {
             uResolution: { type: 'v2', value: new THREE.Vector2( 1, 1 ) },
             uDiffuse: { type: 't', value: undef },
             uDistance: { type: 't', value: undef },
-            uCameraDistance: { type: 'f', value: 0 },
+            uFocusZ: { type: 'f', value: 0 },
             uDelta: { type: 'v2', value: new THREE.Vector2() },
             uAmount: { type: 'f', value: 1 }
         },
@@ -96,7 +96,7 @@ function renderVignette(toScreen) {
 function renderDof(toScreen) {
     var uniforms = dof.uniforms;
     uniforms.uDiffuse.value = _from;
-    uniforms.uCameraDistance.value = settings.cameraPosition.length();
+    uniforms.uFocusZ.value = settings.dofFocusZ;
     uniforms.uAmount.value = settings.dof;
     uniforms.uDistance.value = settings.distanceMap;
     uniforms.uDelta.value.set(1, 0);

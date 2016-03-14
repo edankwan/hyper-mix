@@ -40,6 +40,7 @@ var _bgColor;
 
 var _time = 0;
 var _ray = new THREE.Ray();
+var _v = new THREE.Vector3();
 
 var _initAnimation = 0;
 
@@ -131,6 +132,7 @@ function init() {
     renderingGui.add(settings, 'blur', 0, 5);
     renderingGui.add(settings, 'particleSize', 1, 64).name('particle size');
     renderingGui.add(settings, 'dof', 0, 3, 0.001).name('dof');
+    renderingGui.add(settings, 'dofFocus', -1, 1, 0.001).name('dof focus side');
     renderingGui.addColor(settings, 'bgColor');
     renderingGui.addColor(settings, 'color1');
     renderingGui.addColor(settings, 'color2');
@@ -249,6 +251,9 @@ function _render(dt) {
         ratio = math.unLerp(0.5 + i * 0.01, 0.6 + i * 0.01, _initAnimation);
         _footerItems[i].style.transform = 'translate3d(0,' + ((1 - Math.pow(ratio, 3)) * 50) + 'px,0)';
     }
+
+    _v.set(settings.emitterDistanceRatio * volume.boundBox.x * 0.5 * settings.dofFocus, 0, 0);
+    settings.dofFocusZ = _camera.position.distanceTo(_v);
 
     var renderTarget = postprocessing.render(_scene, _camera);
     particles.update(renderTarget, dt);
