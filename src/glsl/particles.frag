@@ -43,7 +43,8 @@ float unpackDepth( const in vec4 rgba_depth ) {
 }
 
 float texture2DCompare( sampler2D depths, vec2 uv, float compare, float range ) {
-    return smoothstep( compare - range, compare , unpackDepth( texture2D(depths, uv ) ) );
+    float depth = unpackDepth( texture2D(depths, uv ) );
+    return step(compare, depth) + smoothstep( range - compare, -compare , -depth );
     // return step( compare, unpackDepth( texture2D( depths, uv ) ) );
 }
 
@@ -150,8 +151,10 @@ void main() {
     vec4 spotShadowCoord = spotShadowMatrix[0] * vec4(worldPosition.xyz, 1.0);
     color.xyz *= 0.5 + getShadow( spotShadowMap[0], vec2(1024.0, 2048.0), 0.0, .004, spotShadowCoord, mix(0.0005, 0.0175, light) ) * 0.5;
 
+    color += light * 0.3;
+
     // fog
-    float fogFactor = whiteCompliment( exp2( - 0.001 * 0.001 * viewPosition.z * viewPosition.z * LOG2 ) );
+    float fogFactor = whiteCompliment( exp2( - 0.0009 * 0.0009 * viewPosition.z * viewPosition.z * LOG2 ) );
     color.xyz = mix(color.xyz, uFogColor, pow(fogFactor, 6.5));
 
 

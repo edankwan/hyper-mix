@@ -213,8 +213,15 @@ function _render(dt) {
     volume.boundBox.copy(volume.resolution).multiplyScalar(settings.volumeScale);
 
     postprocessing.vignette.uniforms.uReduction.value = math.lerp(0.5, 1.15, _initAnimation);
-    postprocessing.vignette.uniforms.uBoost.value = math.lerp(1.9, 1.15, _initAnimation);
-    _control.maxDistance = _initAnimation === 1 ? 1800 : math.lerp(1800, 1200, _initAnimation);
+    postprocessing.vignette.uniforms.uBoost.value = math.lerp(1.3, 1.15, _initAnimation);
+    if(_initAnimation < 1) {
+        _control.object.position.x = math.lerp(0, 1200, _initAnimation);
+        _control.object.position.y = math.lerp(1200, 100, _initAnimation);
+        _control.object.position.z = math.lerp(1500, 700, _initAnimation);
+        _control.maxDistance = math.lerp(1800, 1400, _initAnimation);
+    } else {
+        _control.maxDistance = 1800;
+    }
     _control.update();
     lights.update(dt, _camera);
 

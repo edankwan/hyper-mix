@@ -16,7 +16,7 @@ var amountInfoMap = {
 
 var amountOptions = exports.amountOptions = [];
 var amountInfo = window.location.href.split('#')[1];
-amountInfo = amountInfoMap[amountInfo] || amountInfoMap['8k'];
+amountInfo = amountInfoMap[amountInfo] || amountInfoMap['16k'];
 for(var i in amountInfoMap) {
     amountOptions.push(i);
     if(amountInfo === amountInfoMap[i]) {
@@ -43,10 +43,10 @@ exports.blur = 0;
 exports.curlSize = 0.00055;
 
 exports.particleSize = 32;
-exports.bgColor = '#909090';
+exports.bgColor = '#c8c8c8';
 exports.color1 = '#ff1e7a';
 exports.color2 = '#00ffc3';
-exports.dof = 1;
+exports.dof = 1.5;
 exports.dofFocus = 1;
 exports.dofFocusZ = 0;
 

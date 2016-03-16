@@ -17,7 +17,7 @@ void main() {
     vec2 resolutionInverted = 1.0 / uResolution;
     vec2 uv = gl_FragCoord.xy * resolutionInverted;
     float centerZ = texture2D( uDistance, uv ).r;
-    float bias = pow(smoothstep(50.0, 400.0, distance(centerZ, uFocusZ)), 2.0);
+    float bias = smoothstep(0.0, 512.0, distance(centerZ, uFocusZ));
     vec2 d = uDelta * resolutionInverted * bias * uAmount;
 
     vec4 sum = vec4(0.0);
