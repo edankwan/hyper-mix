@@ -116,19 +116,19 @@ void main() {
 
     float centerZ = texture2D( uDepth, gl_FragCoord.xy  / uResolution ).r;
 
-
     centerZ  = 0.5 * (-uProjectMatrix[2].z * centerZ + uProjectMatrix[3].z) / centerZ + 0.5;
     if(centerZ > 1.0) discard;
     vec3 ndc = (vec3 (gl_FragCoord.xy / uResolution, centerZ) - 0.5) * 2.0;
     vec4 tmp4 = uProjectMatrixInverse * vec4(ndc, 1.0);
     vec3 viewPosition = tmp4.xyz / tmp4.w;
     float roundW = floor(merged.w + 0.5);
-    viewPosition.z -= merged.z / roundW; // no perspective on the particles
+    viewPosition.z += merged.z / roundW; // no perspective on the particles
 
     tmp4 = uCameraInverse * vec4(viewPosition , 1.0);
     vec3 worldPosition = tmp4.xyz / tmp4.w;
 
     // if(worldPosition.y < -200.0) discard;
+    alpha *= smoothstep(-205.0, -200.0, worldPosition.y);
 
     float colorRatio = smoothstep(-1.0, 1.0, (merged.w - roundW) / merged.z * 100000.0);
 
@@ -149,9 +149,9 @@ void main() {
 
     // shadow
     vec4 spotShadowCoord = spotShadowMatrix[0] * vec4(worldPosition.xyz, 1.0);
-    color.xyz *= 0.5 + getShadow( spotShadowMap[0], vec2(1024.0, 2048.0), 0.0, .004, spotShadowCoord, mix(0.0005, 0.0175, light) ) * 0.5;
+    color.xyz *= 0.5 + getShadow( spotShadowMap[0], vec2(1024.0, 2048.0), 0.0, .004, spotShadowCoord, mix(0.0005, 0.0225, light) ) * 0.5;
 
-    color += light * 0.3;
+    color += light * 0.25;
 
     // fog
     float fogFactor = whiteCompliment( exp2( - 0.0009 * 0.0009 * viewPosition.z * viewPosition.z * LOG2 ) );

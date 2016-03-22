@@ -46,7 +46,7 @@ exports.particleSize = 32;
 exports.bgColor = '#c8c8c8';
 exports.color1 = '#ff1e7a';
 exports.color2 = '#00ffc3';
-exports.dof = 1.5;
+exports.dof = 0.8;
 exports.dofFocus = 1;
 exports.dofFocusZ = 0;
 
