@@ -136,25 +136,22 @@ void main() {
     merged.z = sqrt(1.0 - merged.x * merged.x - merged.y * merged.y);
     merged.xyz = normalize(merged.xyz);
 
-    vec3 color = vec3(0.0);
 
     vec3 lightPosition = uLightPosition - worldPosition;
     vec3 lightDirection = normalize(lightPosition);
 
+    vec3 color = mix(uColor1, uColor2, colorRatio);
+
     float light = max(0.0, dot(normalize((uCameraRotationInverse * vec4(merged.xyz, 1.0)).xyz), lightDirection));
     light *= (1.0 - smoothstep(500.0, 2500.0, length(lightPosition)));
-    color += light;
-
-    color.xyz = mix(color.xyz, mix(uColor1, uColor2, colorRatio), 0.8);
+    color = mix(color, vec3(1.0), light * 0.45);
 
     // shadow
     vec4 spotShadowCoord = spotShadowMatrix[0] * vec4(worldPosition.xyz, 1.0);
     color.xyz *= 0.5 + getShadow( spotShadowMap[0], vec2(1024.0, 2048.0), 0.0, .004, spotShadowCoord, mix(0.0005, 0.0225, light) ) * 0.5;
 
-    color += light * 0.25;
-
     // fog
-    float fogFactor = whiteCompliment( exp2( - 0.0009 * 0.0009 * viewPosition.z * viewPosition.z * LOG2 ) );
+    float fogFactor = whiteCompliment( exp2( - 0.00075 * 0.00075 * viewPosition.z * viewPosition.z * LOG2 ) );
     color.xyz = mix(color.xyz, uFogColor, pow(fogFactor, 6.5));
 
 

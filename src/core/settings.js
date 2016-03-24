@@ -38,17 +38,19 @@ exports.volumeScale = 7;
 
 exports.speed = 0.25;
 exports.dieSpeed = 0.0035;
-exports.radius = 0.25;
+exports.radius = 0.3;
 exports.blur = 0;
 exports.curlSize = 0.00055;
 
 exports.particleSize = 32;
 exports.bgColor = '#c8c8c8';
-exports.color1 = '#ff1e7a';
-exports.color2 = '#00ffc3';
+exports.color1 = '#e6005e';
+exports.color2 = '#00d7a4';
 exports.dof = 0.8;
 exports.dofFocus = 1;
+exports.uDofDistance = 0;
 exports.dofFocusZ = 0;
+exports.dofMouse = false;
 
 exports.capablePrecision = undef;
 

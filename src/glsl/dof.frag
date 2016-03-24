@@ -2,26 +2,28 @@ uniform vec2 uResolution;
 uniform sampler2D uDiffuse;
 uniform sampler2D uDistance;
 uniform vec2 uMouse;
-uniform float uFocusZ;
+uniform float uDofDistance;
 uniform vec2 uDelta;
 uniform float uAmount;
 uniform float uRange;
-
-float unpack1K ( vec4 color ) {
-   const vec4 bitSh = vec4( 1.0 / ( 256.0 * 256.0 * 256.0 ), 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );
-   return dot( color, bitSh ) * 1000.0;
-}
 
 void main() {
 
     vec2 resolutionInverted = 1.0 / uResolution;
     vec2 uv = gl_FragCoord.xy * resolutionInverted;
+
     float centerZ = texture2D( uDistance, uv ).r;
-    float bias = smoothstep(0.0, 512.0, distance(centerZ, uFocusZ));
+    // float mouseCenterZ = texture2D( uDistance, (uMouse + 1.0) * 0.5 ).r;
+    // mouseCenterZ = mix(mouseCenterZ, uCameraDistance, step(-0.1, -mouseCenterZ));
+    // float bias = smoothstep(0.0, 300.0, distance(centerZ, mouseCenterZ));
+
+    float bias = smoothstep(0.0, 512.0, distance(centerZ, uDofDistance));
+
     vec2 d = uDelta * resolutionInverted * bias * uAmount;
 
     vec4 sum = vec4(0.0);
     vec4 center = texture2D( uDiffuse, uv );
+    d *= length(center.xyz);
     sum += texture2D( uDiffuse, ( uv - d * 4. ) ) * 0.051;
     sum += texture2D( uDiffuse, ( uv - d * 3. ) ) * 0.0918;
     sum += texture2D( uDiffuse, ( uv - d * 2. ) ) * 0.12245;

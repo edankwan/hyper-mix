@@ -1,4 +1,3 @@
-var quickLoader = require('quick-loader');
 var dat = require('dat-gui');
 var Stats = require('stats.js');
 var css = require('dom-css');
@@ -10,18 +9,14 @@ var OrbitControls = require('./controls/OrbitControls');
 var settings = require('./core/settings');
 
 var math = require('./utils/math');
-var ease = require('./utils/ease');
 var mobile = require('./fallback/mobile');
 
 var simulator = require('./3d/simulator');
-var imageParse = require('./3d/imageParse');
 var lights = require('./3d/lights');
 var floor = require('./3d/floor');
 var particles = require('./3d/particles');
 var volume = require('./3d/volume');
 var postprocessing = require('./3d/postprocessing');
-
-var _debugPlane;
 
 
 var undef;
@@ -48,6 +43,11 @@ var _logo;
 var _instruction;
 var _footerItems;
 
+var _dofMouseControl;
+var _dofFocusControl;
+
+var _isSkipRendering = false;
+
 function init() {
 
     if(settings.useStats) {
@@ -71,15 +71,16 @@ function init() {
         // transparent : true,
         premultipliedAlpha : false,
         // antialias : true
+        preserveDrawingBuffer : true
     });
 
     // hyjack the render call and ignore the dummy rendering
     var fn = _renderer.renderBufferDirect;
-    _renderer.renderBufferDirect = function(camera, fog, geometry, material, object, group) {
+    _renderer.renderBufferDirect = function(camera, fog, geometry, material) {
         if(material !== settings.ignoredMaterial) {
             fn.apply(this, arguments);
         }
-    }
+    };
 
     settings.capablePrecision = _renderer.capabilities.precision;
     _renderer.setClearColor(settings.bgColor);
@@ -89,8 +90,8 @@ function init() {
 
     _scene = new THREE.Scene();
     _scene.fog = new THREE.FogExp2( _bgColor, 0.001 );
-    _camera = new THREE.PerspectiveCamera( 45, 1, 10, 5000);
-    _camera.position.set(1, 1, 2).normalize().multiplyScalar(3000);
+    _camera = settings.camera = new THREE.PerspectiveCamera( 45, 1, 10, 5000);
+    _camera.position.set(1000, 100, 700).normalize().multiplyScalar(3000);
     settings.cameraPosition = _camera.position;
 
     lights.init(_renderer);
@@ -132,14 +133,26 @@ function init() {
     renderingGui.add(settings, 'blur', 0, 5);
     renderingGui.add(settings, 'particleSize', 1, 64).name('particle size');
     renderingGui.add(settings, 'dof', 0, 3, 0.001).name('dof');
-    renderingGui.add(settings, 'dofFocus', -1, 1, 0.001).name('dof focus side');
+    _dofMouseControl = renderingGui.add(settings, 'dofMouse').name('focus on mouse');
+    _dofFocusControl = renderingGui.add(settings, 'dofFocus', -1, 1, 0.001).name('dof focus side');
     renderingGui.addColor(settings, 'bgColor');
     renderingGui.addColor(settings, 'color1');
     renderingGui.addColor(settings, 'color2');
 
+    _gui.add({fn: function() {
+        _isSkipRendering = true;
+        var link = document.createElement('a');
+        link.download = 'capture.png';
+        link.href = _renderer.domElement.toDataURL();
+        link.click();
+        _isSkipRendering = false;
+    }}, 'fn').name('save as image');
+
     if(!settings.isMobile) {
         simulatorGui.open();
         renderingGui.open();
+    } else {
+        _gui.close();
     }
 
     _logo = document.querySelector('.logo');
@@ -193,9 +206,14 @@ function _loop() {
     var newTime = Date.now();
     raf(_loop);
     if(settings.useStats) _stats.begin();
-    _render(newTime - _time);
+    if(!_isSkipRendering) _render(newTime - _time);
     if(settings.useStats) _stats.end();
     _time = newTime;
+}
+
+function _toggleControl(control, flag) {
+    control.__li.style.pointerEvents = flag ? 'auto' : 'none';
+    control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
 }
 
 function _render(dt) {
@@ -212,12 +230,12 @@ function _render(dt) {
     simulator.initAnimation = _initAnimation;
     volume.boundBox.copy(volume.resolution).multiplyScalar(settings.volumeScale);
 
+    _toggleControl(_dofMouseControl, settings.dof > 0);
+    _toggleControl(_dofFocusControl, (settings.dof > 0) && !settings.dofMouse);
+
     postprocessing.vignette.uniforms.uReduction.value = math.lerp(0.5, 1.15, _initAnimation);
     postprocessing.vignette.uniforms.uBoost.value = math.lerp(1.3, 1.15, _initAnimation);
     if(_initAnimation < 1) {
-        _control.object.position.x = math.lerp(0, 1200, _initAnimation);
-        _control.object.position.y = math.lerp(1200, 100, _initAnimation);
-        _control.object.position.z = math.lerp(1500, 700, _initAnimation);
         _control.maxDistance = math.lerp(1800, 1400, _initAnimation);
     } else {
         _control.maxDistance = 1800;
