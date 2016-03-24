@@ -66,8 +66,8 @@ function init(renderer) {
     var i3;
     for(var i = 0; i < particleAmount; i++) {
         i3 = i * 3;
-        positions[ i3 + 0 ] = (i % simulatorTextureWidth) / simulatorTextureWidth;
-        positions[ i3 + 1 ] = ~~(i / simulatorTextureWidth) / simulatorTextureHeight;
+        positions[ i3 + 0 ] = ((i % simulatorTextureWidth) + 0.5) / simulatorTextureWidth;
+        positions[ i3 + 1 ] = (~~(i / simulatorTextureWidth) + 0.5) / simulatorTextureHeight;
         positions[ i3 + 2 ] = 0;
     }
 

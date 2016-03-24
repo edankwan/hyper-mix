@@ -17,7 +17,7 @@ var _renderer;
 var _mesh;
 var _scene;
 var _camera;
-var _followPointTime = 0;
+var _followPoint;
 
 var TEXTURE_WIDTH = exports.TEXTURE_WIDTH = settings.simulatorTextureWidth;
 var TEXTURE_HEIGHT = exports.TEXTURE_HEIGHT = settings.simulatorTextureHeight;
