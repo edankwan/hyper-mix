@@ -1,12 +1,10 @@
 var settings = require('../core/settings');
 var THREE = require('three');
 var shaderParse = require('../helpers/shaderParse');
+var motionBlur = require('./postprocessing/motionBlur/motionBlur');
 var glslify = require('glslify');
 var simulator = require('./simulator');
 var lights = require('./lights');
-var floor = require('./floor');
-var postprocessing = require('./postprocessing');
-var math = require('../utils/math');
 
 var undef;
 
@@ -121,8 +119,12 @@ function _initGeometry() {
 function _initDepthRenderTarget() {
     var material = new THREE.ShaderMaterial({
         uniforms: {
-            uTexturePosition: { type: 't', value: null },
-            uParticleSize: { type: 'f', value: 1 }
+            uParticleSize: { type: 'f', value: 1 },
+            uTexturePosition: {type: 't', value: undef},
+            uTexturePrevPosition: {type: 't', value: undef},
+            uCameraPosition: {type: 'v3', value: _camera.position},
+            uPrevModelViewMatrix: {type: 'm4', value: new THREE.Matrix4()},
+            uMotionMultiplier: {type: 'f', value: 1}
         },
         vertexShader: shaderParse(glslify('../glsl/particlesDepth.vert')),
         fragmentShader: shaderParse(glslify('../glsl/particlesDepth.frag')),
@@ -144,7 +146,7 @@ function _initDepthRenderTarget() {
 function _initAdditiveRenderTarget() {
     var material = new THREE.ShaderMaterial({
         uniforms: {
-            uTexturePosition: {type: 't', value: null},
+            uTexturePosition: {type: 't', value: undef},
             uDepth: {type: 't', value: _depthRenderTarget},
             uResolution: {type: 'v2', value: _resolution},
             uParticleSize: { type: 'f', value: 1 }
@@ -156,7 +158,6 @@ function _initAdditiveRenderTarget() {
         blendEquation : THREE.AddEquation,
         blendSrc : THREE.OneFactor,
         blendDst : THREE.OneFactor ,
-        // blendEquationAlpha : THREE.MinEquation,
         blendEquationAlpha : THREE.AddEquation,
         blendSrcAlpha : THREE.OneFactor,
         blendDstAlpha : THREE.OneFactor,
@@ -230,9 +231,14 @@ function preRender() {
     _renderer.setClearColor(0, 0);
     _renderer.clearTarget(_depthRenderTarget, true, true, true);
     _particles.material = _depthRenderTarget.material;
+    _depthRenderTarget.material.uniforms.uTexturePrevPosition.value = simulator.prevPositionRenderTarget;
     _depthRenderTarget.material.uniforms.uTexturePosition.value = simulator.positionRenderTarget;
     _depthRenderTarget.material.uniforms.uParticleSize.value = settings.particleSize;
     _renderer.render( _particlesScene, _camera, _depthRenderTarget );
+
+    if(!motionBlur.skipMatrixUpdate) {
+        _depthRenderTarget.material.uniforms.uPrevModelViewMatrix.value.copy(_particles.modelViewMatrix);
+    }
 
     _renderer.setClearColor(0, 0);
     _renderer.clearTarget(_additiveRenderTarget, true, true, true);

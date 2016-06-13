@@ -5,6 +5,7 @@ var undef;
 
 var glslify = require('glslify');
 var volume = require('./volume');
+var fboHelper = require('./fboHelper');
 var shaderParse = require('../helpers/shaderParse');
 
 var _copyShader;
@@ -158,26 +159,27 @@ function update(dt) {
 
     dt = dt * settings.speed;
 
-    var autoClearColor = _renderer.autoClearColor;
-    var clearColor = _renderer.getClearColor().getHex();
-    var clearAlpha = _renderer.getClearAlpha();
+    if(settings.speed || settings.dieSpeed) {
 
-    _renderer.autoClearColor = false;
+        var state = fboHelper.getColorState();
 
-    _positionShader.uniforms.curlSize.value = settings.curlSize;
-    _positionShader.uniforms.dieSpeed.value = settings.dieSpeed;
-    _positionShader.uniforms.radius.value = settings.radius;
-    _positionShader.uniforms.speed.value = settings.speed;
-    _positionShader.uniforms.initAnimation.value = exports.initAnimation;
-    _positionShader.uniforms.uEmitterDistanceRatio.value = settings.emitterDistanceRatio;
-    _positionShader.uniforms.uEmitterSpeed.value = settings.emitterSpeed;
+        _renderer.autoClearColor = false;
 
-    _updatePosition(dt);
+        _positionShader.uniforms.curlSize.value = settings.curlSize;
+        _positionShader.uniforms.dieSpeed.value = settings.dieSpeed;
+        _positionShader.uniforms.radius.value = settings.radius;
+        _positionShader.uniforms.speed.value = settings.speed;
+        _positionShader.uniforms.initAnimation.value = exports.initAnimation;
+        _positionShader.uniforms.uEmitterDistanceRatio.value = settings.emitterDistanceRatio;
+        _positionShader.uniforms.uEmitterSpeed.value = settings.emitterSpeed;
 
-    _renderer.setClearColor(clearColor, clearAlpha);
-    _renderer.autoClearColor = autoClearColor;
-    exports.positionRenderTarget = _positionRenderTarget;
-    exports.prevPositionRenderTarget = _positionRenderTarget2;
+        _updatePosition(dt);
+
+        fboHelper.setColorState(state);
+        exports.positionRenderTarget = _positionRenderTarget;
+        exports.prevPositionRenderTarget = _positionRenderTarget2;
+
+    }
 
 }
 

@@ -17,7 +17,7 @@ void main() {
 
     vec2 uv = gl_FragCoord.xy  / uResolution;
 
-    float centerZ = texture2D( uDepth, gl_FragCoord.xy  / uResolution ).r;
+    float centerZ = texture2D( uDepth, gl_FragCoord.xy  / uResolution ).w;
     float zLength = sqrt(1.0 - toCenter.x * toCenter.x - toCenter.y * toCenter.y) * vHalfSize;
     float z = centerZ - vDepth + zLength;
 

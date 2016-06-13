@@ -114,7 +114,7 @@ void main() {
 
     merged.xy /= merged.z;
 
-    float centerZ = texture2D( uDepth, gl_FragCoord.xy  / uResolution ).r;
+    float centerZ = texture2D( uDepth, gl_FragCoord.xy  / uResolution ).a;
 
     centerZ  = 0.5 * (-uProjectMatrix[2].z * centerZ + uProjectMatrix[3].z) / centerZ + 0.5;
     if(centerZ > 1.0) discard;
@@ -144,7 +144,7 @@ void main() {
 
     float light = max(0.0, dot(normalize((uCameraRotationInverse * vec4(merged.xyz, 1.0)).xyz), lightDirection));
     light *= (1.0 - smoothstep(500.0, 2500.0, length(lightPosition)));
-    color = mix(color, vec3(1.0), light * 0.45);
+    color = mix(color, max(color, vec3(1.0, 0.902, 0.8)), light * 0.45);
 
     // shadow
     vec4 spotShadowCoord = spotShadowMatrix[0] * vec4(worldPosition.xyz, 1.0);

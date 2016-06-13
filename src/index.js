@@ -10,13 +10,22 @@ var settings = require('./core/settings');
 
 var math = require('./utils/math');
 var mobile = require('./fallback/mobile');
+var encode = require('mout/queryString/encode');
 
+var fboHelper = require('./3d/fboHelper');
 var simulator = require('./3d/simulator');
 var lights = require('./3d/lights');
 var floor = require('./3d/floor');
 var particles = require('./3d/particles');
 var volume = require('./3d/volume');
-var postprocessing = require('./3d/postprocessing');
+
+var postprocessing = require('./3d/postprocessing/postprocessing');
+var dof = require('./3d/postprocessing/dof/dof');
+var vignette = require('./3d/postprocessing/vignette/vignette');
+var motionBlur = require('./3d/postprocessing/motionBlur/motionBlur');
+var fxaa = require('./3d/postprocessing/fxaa/fxaa');
+var vignette = require('./3d/postprocessing/vignette/vignette');
+var bloom = require('./3d/postprocessing/bloom/bloom');
 
 
 var undef;
@@ -43,8 +52,6 @@ var _logo;
 var _instruction;
 var _footerItems;
 
-var _dofMouseControl;
-var _dofFocusControl;
 
 var _isSkipRendering = false;
 
@@ -73,6 +80,7 @@ function init() {
         // antialias : true
         preserveDrawingBuffer : true
     });
+    fboHelper.init(_renderer);
 
     // hyjack the render call and ignore the dummy rendering
     var fn = _renderer.renderBufferDirect;
@@ -84,6 +92,7 @@ function init() {
 
     settings.capablePrecision = _renderer.capabilities.precision;
     _renderer.setClearColor(settings.bgColor);
+    _renderer.autoClearColor = true;
     _renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     _renderer.shadowMap.enabled = true;
     document.body.appendChild(_renderer.domElement);
@@ -97,7 +106,7 @@ function init() {
     lights.init(_renderer);
     _scene.add(lights.mesh);
 
-    postprocessing.init(_renderer);
+    postprocessing.init(_renderer, _scene, _camera);
     volume.init(_renderer);
     simulator.init(_renderer);
     particles.init(_renderer, _camera, _scene);
@@ -116,28 +125,76 @@ function init() {
 
     _gui = new dat.GUI();
     var simulatorGui = _gui.addFolder('Simulator');
+    simulatorGui.add(settings.query, 'amount', settings.amountList).onChange(function(){
+        if (confirm('It will restart the demo')) {
+            window.location.href = window.location.href.split('#')[0] + encode(settings.query).replace('?', '#');
+            window.location.reload();
+        }
+    });
     simulatorGui.add(settings, 'speed', 0, 0.7).listen();
     simulatorGui.add(settings, 'dieSpeed', 0, 0.02).name('fade speed').listen();
     simulatorGui.add(settings, 'radius', 0.1, 1);
     simulatorGui.add(settings, 'curlSize', 0.0001, 0.003).name('curl size');
     simulatorGui.add(settings, 'emitterDistanceRatio', 0, 1).name('emitter distance');
     simulatorGui.add(settings, 'emitterSpeed', -50, 50).name('emitter speed');
-    simulatorGui.add(settings, 'amountValue', settings.amountOptions).name('amount').onChange(function(){
-        if (confirm('It will restart the demo')) {
-            window.location.href = window.location.href.split('#')[0] + '#' + settings.amountValue;
-            window.location.reload();
-        }
-    });
 
     var renderingGui = _gui.addFolder('Rendering');
     renderingGui.add(settings, 'blur', 0, 5);
     renderingGui.add(settings, 'particleSize', 1, 64).name('particle size');
-    renderingGui.add(settings, 'dof', 0, 3, 0.001).name('dof');
-    _dofMouseControl = renderingGui.add(settings, 'dofMouse').name('focus on mouse');
-    _dofFocusControl = renderingGui.add(settings, 'dofFocus', -1, 1, 0.001).name('dof focus side');
     renderingGui.addColor(settings, 'bgColor');
     renderingGui.addColor(settings, 'color1');
     renderingGui.addColor(settings, 'color2');
+
+    var postprocessingGui = _gui.addFolder('Post-Processing');
+
+    var dofControl = postprocessingGui.add(settings, 'dof', 0, 3, 0.0001).listen();
+    var dofMouseControl = postprocessingGui.add(settings, 'dofMouse').name('dof on mouse').listen();
+    dofControl.onChange(enableGuiControl.bind(this, dofMouseControl));
+    var dofFocusControl = renderingGui.add(settings, 'dofFocus', -1, 1, 0.001).name('dof focus side');
+    enableGuiControl(dofMouseControl, dofFocusControl, settings.dof);
+    postprocessingGui.add(settings, 'fxaa').listen();
+
+    motionBlur.maxDistance = 120;
+    motionBlur.motionMultiplier = 4;
+    motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[settings.query.motionBlurQuality];
+    var motionBlurControl = postprocessingGui.add(settings, 'motionBlur');
+    var motionMaxDistance = postprocessingGui.add(motionBlur, 'maxDistance', 1, 300).name('motion distance').listen();
+    var motionMultiplier = postprocessingGui.add(motionBlur, 'motionMultiplier', 0.1, 15).name('motion multiplier').listen();
+    var motionQuality = postprocessingGui.add(settings.query, 'motionBlurQuality', settings.motionBlurQualityList).name('motion quality').onChange(function(val){
+        motionBlur.linesRenderTargetScale = settings.motionBlurQualityMap[val];
+        motionBlur.resize();
+    });
+    var controlList = [motionMaxDistance, motionMultiplier, motionQuality];
+    motionBlurControl.onChange(enableGuiControl.bind(this, controlList));
+    enableGuiControl(controlList, settings.motionBlur);
+
+    var bloomControl = postprocessingGui.add(settings, 'bloom');
+    var bloomRadiusControl = postprocessingGui.add(bloom, 'blurRadius', 0, 3).name('bloom radius');
+    var bloomAmountControl = postprocessingGui.add(bloom, 'amount', 0, 3).name('bloom amount');
+    controlList = [bloomRadiusControl, bloomAmountControl];
+    bloomControl.onChange(enableGuiControl.bind(this, controlList));
+    enableGuiControl(controlList, settings.bloom);
+
+    postprocessingGui.add(settings, 'vignette');
+
+    postprocessingGui.open();
+
+
+    function enableGuiControl(controls, flag) {
+        controls = controls.length ? controls : [controls];
+        var control;
+        for(var i = 0, len = controls.length; i < len; i++) {
+            control = controls[i];
+            control.__li.style.pointerEvents = flag ? 'auto' : 'none';
+            control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
+        }
+    }
+
+    var preventDefault = function(evt){evt.preventDefault();this.blur();};
+    Array.prototype.forEach.call(_gui.domElement.querySelectorAll('input[type="checkbox"],select'), function(elem){
+        elem.onkeyup = elem.onkeydown = preventDefault;
+        elem.style.color = '#000';
+    });
 
     _gui.add({fn: function() {
         _isSkipRendering = true;
@@ -184,8 +241,8 @@ function _onMove(evt) {
 
 function _onKeyUp(evt) {
     if(evt.keyCode === 32) {
-        settings.dieSpeed = settings.speed === 0 ? 0.0035  : 0;
         settings.speed = settings.speed === 0 ? 0.25 : 0;
+        settings.dieSpeed = settings.dieSpeed === 0 ? 0.0035  : 0;
     }
 }
 
@@ -195,10 +252,6 @@ function _onResize() {
 
     particles.resize(_width, _height);
     postprocessing.resize(_width, _height);
-
-    _camera.aspect = _width / _height;
-    _camera.updateProjectionMatrix();
-    _renderer.setSize(_width, _height);
 
 }
 
@@ -216,7 +269,9 @@ function _toggleControl(control, flag) {
     control.domElement.parentNode.style.opacity = flag ? 1 : 0.1;
 }
 
-function _render(dt) {
+function _render(dt, newTime) {
+
+    motionBlur.skipMatrixUpdate = !(settings.dieSpeed || settings.speed) && settings.motionBlurPause;
 
     var ratio;
     _bgColor.setStyle(settings.bgColor);
@@ -230,11 +285,8 @@ function _render(dt) {
     simulator.initAnimation = _initAnimation;
     volume.boundBox.copy(volume.resolution).multiplyScalar(settings.volumeScale);
 
-    _toggleControl(_dofMouseControl, settings.dof > 0);
-    _toggleControl(_dofFocusControl, (settings.dof > 0) && !settings.dofMouse);
-
-    postprocessing.vignette.uniforms.uReduction.value = math.lerp(0.5, 1.15, _initAnimation);
-    postprocessing.vignette.uniforms.uBoost.value = math.lerp(1.3, 1.15, _initAnimation);
+    // postprocessing.vignette.uniforms.uReduction.value = math.lerp(0.5, 1.15, _initAnimation);
+    // postprocessing.vignette.uniforms.uBoost.value = math.lerp(1.3, 1.15, _initAnimation);
     if(_initAnimation < 1) {
         _control.maxDistance = math.lerp(1800, 1400, _initAnimation);
     } else {
@@ -280,11 +332,14 @@ function _render(dt) {
     _v.set(settings.emitterDistanceRatio * volume.boundBox.x * 0.5 * settings.dofFocus, 0, 0);
     settings.dofFocusZ = _camera.position.distanceTo(_v);
 
-    var renderTarget = postprocessing.render(_scene, _camera);
-    particles.update(renderTarget, dt);
-    postprocessing.renderDof();
-    postprocessing.renderVignette();
-    postprocessing.renderFxaa(true);
+
+    fxaa.enabled = !!settings.fxaa;
+    dof.enabled = !!settings.dof;
+    motionBlur.enabled = !!settings.motionBlur;
+    vignette.enabled = !!settings.vignette;
+    bloom.enabled = !!settings.bloom;
+
+    postprocessing.render(dt, newTime);
 }
 
 mobile.pass(init);
