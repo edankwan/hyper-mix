@@ -240,7 +240,7 @@ function _onMove(evt) {
 
 function _onKeyUp(evt) {
     if(evt.keyCode === 32) {
-        settings.speed = settings.speed === 0 ? 0.25 : 0;
+        settings.speed = settings.speed === 0 ? 0.45 : 0;
         settings.dieSpeed = settings.dieSpeed === 0 ? 0.0035  : 0;
     }
 }

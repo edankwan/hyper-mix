@@ -36,7 +36,7 @@ exports.volumeSliceColumn = 8;
 exports.volumeSliceRow = 16;
 exports.volumeScale = 7;
 
-exports.speed = 0.25;
+exports.speed = 0.45;
 exports.dieSpeed = 0.0035;
 exports.radius = amountInfo[2];
 exports.blur = 0;
