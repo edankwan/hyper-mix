@@ -117,7 +117,6 @@ function init() {
 
     _control = new OrbitControls( _camera, _renderer.domElement );
     _control.target.y = 100;
-    _control.maxDistance = 1700;
     _control.minPolarAngle = 0.3;
     _control.maxPolarAngle = Math.PI / 2 + 0.1;
     // _control.noPan = true;
@@ -290,7 +289,7 @@ function _render(dt, newTime) {
     if(_initAnimation < 1) {
         _control.maxDistance = math.lerp(1800, 1400, _initAnimation);
     } else {
-        _control.maxDistance = 1800;
+        _control.maxDistance = 2400;
     }
     _control.update();
     lights.update(dt, _camera);

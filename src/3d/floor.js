@@ -9,9 +9,10 @@ exports.init = init;
 function init() {
     var geometry = new THREE.PlaneBufferGeometry( 4500, 4500, 10, 10 );
     var planeMaterial = new THREE.MeshStandardMaterial( {
-        color: 0x000000,
         roughness: 0.7,
-        metalness: 0.2
+        metalness: 1.0,
+        color: 0x333333,
+        emissive: 0x000000
     } );
     // var planeMaterial = new THREE.MeshNormalMaterial();
     // planeMaterial.color = new THREE.Color();

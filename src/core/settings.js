@@ -7,17 +7,17 @@ var undef;
 exports.useStats = false;
 
 var amountMap = {
-    '4k' : [64, 64],
-    '8k' : [128, 64],
-    '16k' : [128, 128],
-    '32k' : [256, 128],
-    '65k' : [256, 256],
-    '131k' : [512, 256],
-    '252k' : [512, 512],
-    '524k' : [1024, 512],
-    '1m' : [1024, 1024],
-    '2m' : [2048, 1024],
-    '4m' : [2048, 2048]
+    '4k' : [64, 64, 0.3],
+    '8k' : [128, 64, 0.3],
+    '16k' : [128, 128, 0.3],
+    '32k' : [256, 128, 0.5],
+    '65k' : [256, 256, 0.6],
+    '131k' : [512, 256, 0.65],
+    '252k' : [512, 512, 0.7],
+    '524k' : [1024, 512, 0.75],
+    '1m' : [1024, 1024, 0.8],
+    '2m' : [2048, 1024, 0.85],
+    '4m' : [2048, 2048, 0.9]
 };
 
 exports.amountList = keys(amountMap);
@@ -38,14 +38,14 @@ exports.volumeScale = 7;
 
 exports.speed = 0.25;
 exports.dieSpeed = 0.0035;
-exports.radius = 0.3;
+exports.radius = amountInfo[2];
 exports.blur = 0;
 exports.curlSize = 0.00055;
 
 exports.particleSize = 32;
 exports.bgColor = '#1c2020';
 exports.color1 = '#e6005e';
-exports.color2 = '#00d7a4';
+exports.color2 = '#00b1d7';
 exports.dof = 0;
 exports.dofFocus = 1;
 exports.uDofDistance = 0;

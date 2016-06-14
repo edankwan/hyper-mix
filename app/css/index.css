@@ -54,10 +54,10 @@ html, body,
     left: 50%;
     top: 50%;
     width: 443px;
-    height: 108px;
+    height: 110px;
     margin-left: -222px;
-    margin-top: -54px;
-    background-size: 443px 108px;
+    margin-top: -55px;
+    background-size: 100% 100%;
     background-image: url(../images/logo.png);
     pointer-events: none;
     opacity: 0;
