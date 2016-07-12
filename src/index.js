@@ -270,6 +270,9 @@ function _toggleControl(control, flag) {
 
 function _render(dt, newTime) {
 
+    dt = dt || 0;
+    settings.deltaRatio = dt / 16.666667;
+
     motionBlur.skipMatrixUpdate = !(settings.dieSpeed || settings.speed) && settings.motionBlurPause;
 
     var ratio;

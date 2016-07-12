@@ -72,6 +72,7 @@ function init(renderer) {
             speed: { type: 'f', value: 0 },
             curlSize: { type: 'f', value: 0 },
             dieSpeed: { type: 'f', value: 0 },
+            deltaRatio: { type: 'f', value: 1 },
             radius: { type: 'f', value: 0 },
             time: { type: 'f', value: 0 },
             initAnimation: { type: 'f', value: 0 },
@@ -172,6 +173,7 @@ function update(dt) {
         _positionShader.uniforms.initAnimation.value = exports.initAnimation;
         _positionShader.uniforms.uEmitterDistanceRatio.value = settings.emitterDistanceRatio;
         _positionShader.uniforms.uEmitterSpeed.value = settings.emitterSpeed;
+        _positionShader.uniforms.deltaRatio.value = settings.deltaRatio;
 
         _updatePosition(dt);
 

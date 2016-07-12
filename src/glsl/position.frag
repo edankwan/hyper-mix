@@ -7,6 +7,7 @@ uniform float curlSize;
 uniform float dieSpeed;
 uniform float radius;
 uniform float initAnimation;
+uniform float deltaRatio;
 
 uniform vec3 uBoundBox;
 uniform float uEmitterDistanceRatio;
@@ -30,7 +31,7 @@ void main() {
     vec3 position = positionInfo.xyz * smoothstep(0.0, 0.3, initAnimation);
     float color;
 
-    float life = fract(positionInfo.w) - dieSpeed;
+    float life = fract(positionInfo.w) - dieSpeed * deltaRatio;
     float side = step(0.5, uv.x) * 2.0 - 1.0;
     float initForce = pow(initAnimation, 2.5);
 
@@ -41,8 +42,8 @@ void main() {
         color = side * 0.5 + 0.5;
         life = 0.5 + fract(positionInfo.w * 21.4131 + time) * 0.499;
     } else {
-        position.x -= speed * side * uEmitterSpeed * smoothstep(-1.0, -0.5, -life) * initForce;
-        position += curl(position * curlSize, time * 2.3, 1.2 + (1.0 - life) * 0.35) * speed * (1.75 - life);
+        position.x -= speed * side * uEmitterSpeed * smoothstep(-1.0, -0.5, -life) * initForce * deltaRatio;
+        position += curl(position * curlSize, time * 2.3, 1.2 + (1.0 - life) * 0.35) * speed * (1.75 - life) * deltaRatio;
 
         vec3 color3 = getColor3(positionInfo.xyz);
 
